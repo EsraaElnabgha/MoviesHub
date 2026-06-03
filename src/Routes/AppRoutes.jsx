@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import Home from '../pages/Home'
 import DetailsPage from '../pages/DetailsPage'
 import Favorites from '../pages/Favorites'
+import Profile from '../pages/Profile'
 import NotFound from '../pages/NotFound'
 
 function AppRoutes() {
@@ -10,6 +11,7 @@ function AppRoutes() {
       <Route path="/" element={<Home />} />
       <Route path="/movie/:id" element={<DetailsPage />} />
       <Route path="/favorites" element={<Favorites />} />
+      <Route path="/profile" element={<Profile />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   )

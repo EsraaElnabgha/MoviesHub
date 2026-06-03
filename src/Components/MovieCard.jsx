@@ -1,38 +1,28 @@
 import { useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { FaHeart, FaRegHeart, FaStar } from 'react-icons/fa'
-
-const FAVORITES_KEY = 'moviesHubFavorites'
-
-function getFavorites() {
-  try {
-    return JSON.parse(localStorage.getItem(FAVORITES_KEY)) || []
-  } catch {
-    return []
-  }
-}
+import { FaHeart, FaRegHeart, FaStar, FaBookmark, FaRegBookmark } from 'react-icons/fa'
+import { favorites, watchlist } from '../services/storage'
 
 function MovieCard({ movie }) {
   const navigate = useNavigate()
   const [isFav, setIsFav] = useState(false)
+  const [isWatchlisted, setIsWatchlisted] = useState(false)
 
   useEffect(() => {
-    const favs = getFavorites()
-    setIsFav(favs.some((f) => f.imdbID === movie.imdbID))
+    setIsFav(favorites.has(movie.imdbID))
+    setIsWatchlisted(watchlist.has(movie.imdbID))
   }, [movie.imdbID])
 
   function toggleFavorite(e) {
     e.stopPropagation()
-    const favs = getFavorites()
-    if (isFav) {
-      const updated = favs.filter((f) => f.imdbID !== movie.imdbID)
-      localStorage.setItem(FAVORITES_KEY, JSON.stringify(updated))
-      setIsFav(false)
-    } else {
-      const updated = [...favs, movie]
-      localStorage.setItem(FAVORITES_KEY, JSON.stringify(updated))
-      setIsFav(true)
-    }
+    const nowIn = favorites.toggle(movie)
+    setIsFav(nowIn)
+  }
+
+  function toggleWatchlist(e) {
+    e.stopPropagation()
+    const nowIn = watchlist.toggle(movie)
+    setIsWatchlisted(nowIn)
   }
 
   const poster =
@@ -60,21 +50,34 @@ function MovieCard({ movie }) {
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
         />
-        {/* Gradient overlay on hover */}
+        {/* Gradient overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-        {/* Favorite button */}
-        <button
-          onClick={toggleFavorite}
-          className="absolute top-3 right-3 p-2 rounded-full bg-slate-950/70 backdrop-blur-sm text-white hover:scale-110 transition-all duration-200 z-10"
-          title={isFav ? 'Remove from favorites' : 'Add to favorites'}
-        >
-          {isFav ? (
-            <FaHeart className="text-orange-500 text-sm" />
-          ) : (
-            <FaRegHeart className="text-gray-300 text-sm" />
-          )}
-        </button>
+        {/* Action buttons (heart + bookmark) */}
+        <div className="absolute top-3 right-3 flex flex-col gap-1.5 z-10">
+          <button
+            onClick={toggleFavorite}
+            className="p-2 rounded-full bg-slate-950/70 backdrop-blur-sm text-white hover:scale-110 transition-all duration-200"
+            title={isFav ? 'Remove from favorites' : 'Add to favorites'}
+          >
+            {isFav ? (
+              <FaHeart className="text-orange-500 text-sm" />
+            ) : (
+              <FaRegHeart className="text-gray-300 text-sm" />
+            )}
+          </button>
+          <button
+            onClick={toggleWatchlist}
+            className="p-2 rounded-full bg-slate-950/70 backdrop-blur-sm text-white hover:scale-110 transition-all duration-200"
+            title={isWatchlisted ? 'Remove from watchlist' : 'Add to watchlist'}
+          >
+            {isWatchlisted ? (
+              <FaBookmark className="text-indigo-400 text-sm" />
+            ) : (
+              <FaRegBookmark className="text-gray-300 text-sm" />
+            )}
+          </button>
+        </div>
 
         {/* Type badge */}
         <span

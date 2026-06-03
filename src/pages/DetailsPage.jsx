@@ -2,17 +2,8 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { getMovieDetails } from '../services/api'
 import Loader from '../Components/Loader'
-import { FaHeart, FaRegHeart, FaStar, FaArrowLeft, FaClock, FaCalendarAlt, FaGlobe, FaTrophy } from 'react-icons/fa'
-
-const FAVORITES_KEY = 'moviesHubFavorites'
-
-function getFavorites() {
-  try {
-    return JSON.parse(localStorage.getItem(FAVORITES_KEY)) || []
-  } catch {
-    return []
-  }
-}
+import { FaHeart, FaRegHeart, FaStar, FaArrowLeft, FaClock, FaCalendarAlt, FaGlobe, FaTrophy, FaBookmark, FaRegBookmark } from 'react-icons/fa'
+import { favorites as favStorage, watchlist as wlStorage } from '../services/storage'
 
 function RatingBadge({ source, value }) {
   const colors = {
@@ -39,6 +30,7 @@ function DetailsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [isFav, setIsFav] = useState(false)
+  const [isWatchlisted, setIsWatchlisted] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -48,35 +40,35 @@ function DetailsPage() {
         setError(data.error)
       } else {
         setMovie(data)
-        const favs = getFavorites()
-        setIsFav(favs.some((f) => f.imdbID === data.imdbID))
+        setIsFav(favStorage.has(data.imdbID))
+        setIsWatchlisted(wlStorage.has(data.imdbID))
       }
       setLoading(false)
     }
     load()
   }, [id])
 
+  function cardData() {
+    return {
+      imdbID: movie.imdbID,
+      Title: movie.Title,
+      Year: movie.Year,
+      Poster: movie.Poster,
+      Type: movie.Type,
+      imdbRating: movie.imdbRating,
+    }
+  }
+
   function toggleFavorite() {
     if (!movie) return
-    const favs = getFavorites()
-    if (isFav) {
-      const updated = favs.filter((f) => f.imdbID !== movie.imdbID)
-      localStorage.setItem(FAVORITES_KEY, JSON.stringify(updated))
-      setIsFav(false)
-    } else {
-      // Store a simplified card-compatible object
-      const cardData = {
-        imdbID: movie.imdbID,
-        Title: movie.Title,
-        Year: movie.Year,
-        Poster: movie.Poster,
-        Type: movie.Type,
-        imdbRating: movie.imdbRating,
-      }
-      const updated = [...favs, cardData]
-      localStorage.setItem(FAVORITES_KEY, JSON.stringify(updated))
-      setIsFav(true)
-    }
+    const nowIn = favStorage.toggle(cardData())
+    setIsFav(nowIn)
+  }
+
+  function toggleWatchlist() {
+    if (!movie) return
+    const nowIn = wlStorage.toggle(cardData())
+    setIsWatchlisted(nowIn)
   }
 
   if (loading) {
@@ -134,6 +126,7 @@ function DetailsPage() {
                 alt={movie.Title}
                 className="w-full rounded-2xl shadow-2xl shadow-black/60 border border-slate-800"
               />
+              {/* Favorites button */}
               <button
                 onClick={toggleFavorite}
                 className={`mt-4 w-full flex items-center justify-center gap-2 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 cursor-pointer border ${
@@ -144,6 +137,18 @@ function DetailsPage() {
               >
                 {isFav ? <FaHeart className="text-orange-500" /> : <FaRegHeart />}
                 {isFav ? 'Remove from Favorites' : 'Add to Favorites'}
+              </button>
+              {/* Watchlist button */}
+              <button
+                onClick={toggleWatchlist}
+                className={`mt-2 w-full flex items-center justify-center gap-2 py-2.5 rounded-full font-semibold text-sm transition-all duration-200 cursor-pointer border ${
+                  isWatchlisted
+                    ? 'bg-indigo-600/20 border-indigo-500/50 text-indigo-400 hover:bg-indigo-600/30'
+                    : 'bg-slate-800 border-slate-700 text-slate-300 hover:border-indigo-500/50 hover:text-indigo-400'
+                }`}
+              >
+                {isWatchlisted ? <FaBookmark className="text-indigo-400" /> : <FaRegBookmark />}
+                {isWatchlisted ? 'In My Watchlist' : 'Add to Watchlist'}
               </button>
             </div>
           </div>
