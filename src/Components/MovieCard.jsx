@@ -1,7 +1,8 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { FaHeart, FaRegHeart, FaStar, FaBookmark, FaRegBookmark } from 'react-icons/fa'
 import { favorites, watchlist } from '../services/storage'
+import { useAuth } from '../context/AuthContext'
 
 function MovieCard({ movie }) {
   const navigate = useNavigate()
@@ -13,17 +14,29 @@ function MovieCard({ movie }) {
     setIsWatchlisted(watchlist.has(movie.imdbID))
   }, [movie.imdbID])
 
+  const { user } = useAuth()
+  const location = useLocation()
+
   function toggleFavorite(e) {
     e.stopPropagation()
+    if (!user) {
+      navigate(`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`)
+      return
+    }
     const nowIn = favorites.toggle(movie)
     setIsFav(nowIn)
   }
 
   function toggleWatchlist(e) {
     e.stopPropagation()
+    if (!user) {
+      navigate(`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`)
+      return
+    }
     const nowIn = watchlist.toggle(movie)
     setIsWatchlisted(nowIn)
   }
+
 
   const poster =
     movie.Poster && movie.Poster !== 'N/A'

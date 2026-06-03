@@ -1,30 +1,37 @@
 import { useState, useEffect } from 'react'
+import { Navigate } from 'react-router-dom'
 import { FaHeart } from 'react-icons/fa'
+import { useAuth } from '../context/AuthContext'
+import { favorites as favStorage } from '../services/storage'
 import MovieCard from '../Components/MovieCard'
 
-const FAVORITES_KEY = 'moviesHubFavorites'
-
 function Favorites() {
+  const { user } = useAuth()
   const [favorites, setFavorites] = useState([])
 
+  // Route guard: redirect if not logged in
+  if (!user) {
+    return <Navigate to="/login?redirect=/favorites" replace />
+  }
+
   function load() {
-    try {
-      const data = JSON.parse(localStorage.getItem(FAVORITES_KEY)) || []
-      setFavorites(data)
-    } catch {
-      setFavorites([])
-    }
+    setFavorites(favStorage.getAll())
   }
 
   useEffect(() => {
     load()
-    // Re-load when storage changes in another tab
+    // Re-load when storage changes (e.g. from another tab or components)
     window.addEventListener('storage', load)
-    return () => window.removeEventListener('storage', load)
+    window.addEventListener('authChange', load)
+    return () => {
+      window.removeEventListener('storage', load)
+      window.removeEventListener('authChange', load)
+    }
   }, [])
 
   function clearAll() {
-    localStorage.removeItem(FAVORITES_KEY)
+    const listKey = `moviesHubFavorites_${user.username}`
+    localStorage.removeItem(listKey)
     setFavorites([])
   }
 
@@ -58,7 +65,7 @@ function Favorites() {
         {/* Content */}
         {favorites.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="text-7xl mb-6 opacity-20">
+            <div className="text-7xl mb-6 opacity-20 text-orange-500">
               <FaHeart />
             </div>
             <h3 className="text-xl font-semibold text-slate-400 mb-2">No favorites yet</h3>

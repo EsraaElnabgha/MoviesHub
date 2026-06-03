@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { BrowserRouter, useNavigate, useLocation, useSearchParams } from 'react-router-dom'
 import './App.css'
+import { AuthProvider } from './context/AuthContext'
 import Navbar from './Components/Navbar'
 import AppRoutes from './Routes/AppRoutes'
 import AutoCarousel from './Components/AutoCarousel'
@@ -108,7 +109,9 @@ function AppLayout() {
 function App() {
   return (
     <BrowserRouter>
-      <AppLayout />
+      <AuthProvider>
+        <AppLayout />
+      </AuthProvider>
     </BrowserRouter>
   )
 }

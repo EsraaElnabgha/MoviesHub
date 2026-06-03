@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate, Link, useLocation, useSearchParams } from 'react-router-dom'
-import { FaHeart, FaSearch, FaFilm, FaTv } from 'react-icons/fa'
+import { FaHeart, FaSearch, FaFilm, FaTv, FaSignOutAlt, FaUser } from 'react-icons/fa'
 import { searchMovies } from '../services/api'
+import { useAuth } from '../context/AuthContext'
 
 // Debounce hook
 function useDebounce(value, delay) {
@@ -14,6 +15,7 @@ function useDebounce(value, delay) {
 }
 
 function Navbar() {
+  const { user, logout } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -25,6 +27,7 @@ function Navbar() {
   const location = useLocation()
   const [searchParams] = useSearchParams()
   const searchRef = useRef(null)
+  const dropdownRef = useRef(null)
 
   const debouncedQuery = useDebounce(searchQuery, 350)
 
@@ -49,16 +52,37 @@ function Navbar() {
     return () => { cancelled = true }
   }, [debouncedQuery])
 
+
+  // Get initials for profile avatar
+  const getInitials = (name) => {
+    if (!name) return ''
+    const parts = name.trim().split(/\s+/)
+    if (parts.length >= 2) {
+      return (parts[0][0] + parts[1][0]).toUpperCase()
+    }
+    return name.slice(0, 2).toUpperCase()
+  }
+
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(e) {
       if (searchRef.current && !searchRef.current.contains(e.target)) {
         setShowSuggestions(false)
       }
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setProfileOpen(false)
+      }
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
+
+  function handleSignOut(e) {
+    e.preventDefault()
+    logout()
+    setProfileOpen(false)
+    navigate('/')
+  }
 
   function handleNavSearch(e) {
     e.preventDefault()
@@ -232,43 +256,62 @@ function Navbar() {
               </svg>
             </button>
 
-            {/* Profile dropdown */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setProfileOpen(!profileOpen)}
-                className="p-1.5 rounded-full text-gray-400 hover:text-white transition-colors duration-200"
+            {/* Profile Section */}
+            {!user ? (
+              <Link
+                to="/login"
+                className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold text-white border border-slate-700 bg-slate-900 hover:border-orange-500/50 hover:text-orange-400 hover:bg-slate-950 transition-all duration-200 cursor-pointer shadow-md"
               >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true" className="h-5 w-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </button>
+                <FaUser className="text-[10px]" />
+                Sign In
+              </Link>
+            ) : (
+              <div ref={dropdownRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setProfileOpen(!profileOpen)}
+                  className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white text-xs border border-white/20 shadow-md hover:scale-105 transition-all duration-200 cursor-pointer"
+                  style={{ background: user.avatarGradient }}
+                >
+                  {getInitials(user.displayName)}
+                </button>
 
-              {profileOpen && (
-                <div className="absolute right-0 z-50 mt-2 w-44 rounded-xl bg-slate-900 border border-slate-800 py-1 shadow-xl">
-                  <Link
-                    to="/profile"
-                    onClick={() => setProfileOpen(false)}
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors duration-150"
-                  >
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    My Profile
-                  </Link>
-                  <Link
-                    to="/favorites"
-                    onClick={() => setProfileOpen(false)}
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors duration-150"
-                  >
-                    <FaHeart className="w-4 h-4 text-orange-400" />
-                    Favorites
-                  </Link>
-                  <hr className="border-slate-800 my-1" />
-                  <a href="#" className="block px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-colors duration-150">Sign out</a>
-                </div>
-              )}
-            </div>
+                {profileOpen && (
+                  <div className="absolute right-0 z-50 mt-2.5 w-48 rounded-2xl bg-slate-900 border border-slate-800 py-1.5 shadow-xl shadow-black/80">
+                    <div className="px-4 py-2 border-b border-slate-800/80 mb-1">
+                      <p className="text-white text-sm font-semibold truncate leading-none mb-1">{user.displayName}</p>
+                      <p className="text-slate-500 text-xs truncate">@{user.username}</p>
+                    </div>
+                    <Link
+                      to="/profile"
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors duration-150"
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="w-4 h-4 text-slate-400">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      My Profile
+                    </Link>
+                    <Link
+                      to="/favorites"
+                      onClick={() => setProfileOpen(false)}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors duration-150"
+                    >
+                      <FaHeart className="w-4 h-4 text-orange-400" />
+                      Favorites
+                    </Link>
+                    <hr className="border-slate-800/85 my-1" />
+                    <button
+                      onClick={handleSignOut}
+                      className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-400 hover:bg-red-500/10 transition-colors duration-150 text-left cursor-pointer"
+                    >
+                      <FaSignOutAlt className="w-4 h-4" />
+                      Sign out
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
         </div>

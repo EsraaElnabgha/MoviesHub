@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { getMovieDetails } from '../services/api'
 import Loader from '../Components/Loader'
 import { FaHeart, FaRegHeart, FaStar, FaArrowLeft, FaClock, FaCalendarAlt, FaGlobe, FaTrophy, FaBookmark, FaRegBookmark } from 'react-icons/fa'
 import { favorites as favStorage, watchlist as wlStorage } from '../services/storage'
+import { useAuth } from '../context/AuthContext'
 
 function RatingBadge({ source, value }) {
   const colors = {
@@ -26,6 +27,8 @@ function RatingBadge({ source, value }) {
 function DetailsPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
+  const { user } = useAuth()
   const [movie, setMovie] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -61,15 +64,24 @@ function DetailsPage() {
 
   function toggleFavorite() {
     if (!movie) return
+    if (!user) {
+      navigate(`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`)
+      return
+    }
     const nowIn = favStorage.toggle(cardData())
     setIsFav(nowIn)
   }
 
   function toggleWatchlist() {
     if (!movie) return
+    if (!user) {
+      navigate(`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`)
+      return
+    }
     const nowIn = wlStorage.toggle(cardData())
     setIsWatchlisted(nowIn)
   }
+
 
   if (loading) {
     return (
