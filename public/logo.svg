@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 220" width="100%" height="100%">
+  <defs>
+    <!-- Google Fonts Import -->
+    <style type="text/css">
+      @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700;800&amp;family=Montserrat:wght@900&amp;display=swap');
+      
+      .movie-text {
+        font-family: 'Cinzel', 'Georgia', serif;
+        font-weight: 800;
+        fill: url(#gold-grad);
+        filter: drop-shadow(2px 3px 2px rgba(0, 0, 0, 0.4));
+      }
+      
+      .hub-text {
+        font-family: 'Montserrat', 'Arial Black', sans-serif;
+        font-weight: 900;
+        fill: url(#silver-grad);
+        letter-spacing: 2px;
+        filter: drop-shadow(2px 3px 2px rgba(0, 0, 0, 0.5));
+      }
+      
+      .reel-metallic-ring {
+        fill: url(#silver-grad);
+        filter: drop-shadow(2px 4px 4px rgba(0, 0, 0, 0.45));
+      }
+    </style>
+
+    <!-- Gradients -->
+    <!-- Gold Gradient for MOVIE text -->
+    <linearGradient id="gold-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFE082" />   <!-- Soft light gold -->
+      <stop offset="35%" stop-color="#FFB300" />  <!-- True gold -->
+      <stop offset="70%" stop-color="#FF8F00" />  <!-- Dark golden orange -->
+      <stop offset="100%" stop-color="#E65100" /> <!-- Deep orange border/shadow tone -->
+    </linearGradient>
+    
+    <!-- Silver/Metallic Gradient for Reel Outer Rim and HUB text -->
+    <linearGradient id="silver-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="25%" stop-color="#ECEFF1" />
+      <stop offset="60%" stop-color="#B0BEC5" />
+      <stop offset="100%" stop-color="#78909C" />
+    </linearGradient>
+
+    <!-- Inner Reel Plate Gradient -->
+    <linearGradient id="inner-reel-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ECEFF1" />
+      <stop offset="100%" stop-color="#90A4AE" />
+    </linearGradient>
+
+    <!-- Red Play Button Gradient -->
+    <linearGradient id="red-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FF5252" />
+      <stop offset="100%" stop-color="#D50000" />
+    </linearGradient>
+
+    <!-- Mask to punch transparent holes in the film reel web -->
+    <mask id="reel-holes">
+      <!-- White keeps the plate -->
+      <circle cx="195" cy="100" r="45" fill="white" />
+      <!-- Black cuts holes out -->
+      <!-- 6 holes arranged in a circle of radius 28px, each hole is 8px radius -->
+      <circle cx="195" cy="72" r="8" fill="black" />       <!-- 0 deg (Top) -->
+      <circle cx="219.2" cy="86" r="8" fill="black" />     <!-- 60 deg -->
+      <circle cx="219.2" cy="114" r="8" fill="black" />    <!-- 120 deg -->
+      <circle cx="195" cy="128" r="8" fill="black" />      <!-- 180 deg (Bottom) -->
+      <circle cx="170.8" cy="114" r="8" fill="black" />    <!-- 240 deg -->
+      <circle cx="170.8" cy="86" r="8" fill="black" />     <!-- 300 deg -->
+    </mask>
+  </defs>
+
+  <!-- LOGO GRAPHICS GROUP -->
+  <g>
+    <!-- Letter "M" -->
+    <text x="40" y="140" font-size="115" class="movie-text">M</text>
+
+    <!-- Film Reel ("O") -->
+    <!-- Outer Metallic Ring -->
+    <circle cx="195" cy="100" r="50" class="reel-metallic-ring" />
+    <!-- Inner Groove Shadow -->
+    <circle cx="195" cy="100" r="46" fill="none" stroke="#455A64" stroke-width="1" opacity="0.6" />
+    <!-- Inner Web Plate with cut-out holes -->
+    <circle cx="195" cy="100" r="45" fill="url(#inner-reel-grad)" mask="url(#reel-holes)" />
+    <!-- Center Red Hub -->
+    <circle cx="195" cy="100" r="18" fill="url(#red-grad)" filter="drop-shadow(1px 2px 2px rgba(0, 0, 0, 0.4))" />
+    <!-- Center White Play Triangle -->
+    <polygon points="191,92 191,108 204,100" fill="#FFFFFF" />
+
+    <!-- Letters "VIE" -->
+    <text x="250" y="140" font-size="115" class="movie-text">VIE</text>
+
+    <!-- Word "HUB" -->
+    <text x="282" y="195" font-size="60" class="hub-text">HUB</text>
+  </g>
+</svg>
